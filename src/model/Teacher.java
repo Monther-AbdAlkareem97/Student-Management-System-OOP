@@ -1,6 +1,6 @@
 package model;
 
-public class Teacher extends User {
+public class Teacher extends User implements Payable{
     
     private String teacherId;
     private String subject;        // المادة اللي يدرسها
