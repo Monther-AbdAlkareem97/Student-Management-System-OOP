@@ -1,0 +1,295 @@
+/* ===== الألوان الأساسية ===== */
+
+/* Login */
+.login-root {
+    -fx-background-color: #faf8f3;
+}
+
+.login-left-panel {
+    -fx-background-color: linear-gradient(to bottom, #16243f, #0f1a30);
+    -fx-padding: 40px;
+}
+
+.login-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.login-subtitle {
+    -fx-font-size: 13px;
+    -fx-text-fill: #9aa6c4;
+}
+
+.login-right-panel {
+    -fx-background-color: white;
+    -fx-padding: 50px;
+    -fx-max-width: infinity;
+}
+
+.login-eyebrow {
+    -fx-font-size: 11px;
+    -fx-text-fill: #b8923a;
+    -fx-font-weight: bold;
+}
+
+.login-heading {
+    -fx-font-size: 24px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #16243f;
+}
+
+.field-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #5b6275;
+    -fx-font-weight: bold;
+}
+
+.text-input {
+    -fx-background-color: #fdfcfa;
+    -fx-border-color: #e2ddd0;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-padding: 10px 14px;
+    -fx-font-size: 14px;
+    -fx-pref-width: 280px;
+}
+
+.text-input:focused {
+    -fx-border-color: #b8923a;
+    -fx-effect: dropshadow(gaussian, rgba(184,146,58,0.2), 6, 0, 0, 0);
+}
+
+.login-btn {
+    -fx-background-color: #16243f;
+    -fx-text-fill: white;
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-pref-width: 280px;
+    -fx-pref-height: 42px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.login-btn:hover {
+    -fx-background-color: #233860;
+}
+
+/* ===== Dashboard / Sidebar ===== */
+
+.sidebar {
+    -fx-background-color: #16243f;
+    -fx-pref-width: 220px;
+    -fx-padding: 0;
+}
+
+.sidebar-brand {
+    -fx-padding: 20px;
+    -fx-border-color: transparent transparent rgba(255,255,255,0.08) transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.sidebar-brand-title {
+    -fx-font-size: 14px;
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.nav-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #a8b2cc;
+    -fx-font-size: 13px;
+    -fx-alignment: CENTER_RIGHT;
+    -fx-pref-width: 220px;
+    -fx-pref-height: 44px;
+    -fx-padding: 0 20px;
+    -fx-cursor: hand;
+    -fx-border-color: transparent;
+}
+
+.nav-btn:hover {
+    -fx-background-color: rgba(255,255,255,0.05);
+    -fx-text-fill: white;
+}
+
+.nav-btn-active {
+    -fx-background-color: rgba(184,146,58,0.12);
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-border-color: transparent #b8923a transparent transparent;
+    -fx-border-width: 0 3 0 0;
+}
+
+.logout-btn {
+    -fx-background-color: transparent;
+    -fx-text-fill: #c98b8b;
+    -fx-font-size: 12px;
+    -fx-pref-width: 220px;
+    -fx-pref-height: 44px;
+    -fx-padding: 0 20px;
+    -fx-alignment: CENTER_RIGHT;
+    -fx-cursor: hand;
+}
+
+/* ===== Main Content ===== */
+
+.main-content {
+    -fx-background-color: #faf8f3;
+    -fx-padding: 30px;
+}
+
+.page-eyebrow {
+    -fx-font-size: 11px;
+    -fx-text-fill: #b8923a;
+    -fx-font-weight: bold;
+}
+
+.page-title {
+    -fx-font-size: 22px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #16243f;
+}
+
+/* ===== Stat Cards ===== */
+
+.stat-card {
+    -fx-background-color: white;
+    -fx-border-color: #e2ddd0;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 16px 18px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);
+}
+
+.stat-number {
+    -fx-font-size: 28px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #16243f;
+}
+
+.stat-label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #5b6275;
+}
+
+/* ===== Table Panel ===== */
+
+.panel {
+    -fx-background-color: white;
+    -fx-border-color: #e2ddd0;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.04), 4, 0, 0, 1);
+}
+
+.panel-title {
+    -fx-font-size: 15px;
+    -fx-font-weight: bold;
+    -fx-text-fill: #16243f;
+    -fx-padding: 14px 18px;
+}
+
+.table-view {
+    -fx-background-color: white;
+    -fx-border-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f6f3ec;
+}
+
+.table-view .column-header .label {
+    -fx-font-size: 12px;
+    -fx-text-fill: #5b6275;
+    -fx-font-weight: bold;
+}
+
+.table-row-cell {
+    -fx-border-color: transparent transparent #f0ede3 transparent;
+    -fx-border-width: 0 0 1 0;
+}
+
+.table-row-cell:selected {
+    -fx-background-color: rgba(184,146,58,0.1);
+    -fx-text-fill: #16243f;
+}
+
+/* ===== Buttons ===== */
+
+.btn-primary {
+    -fx-background-color: #16243f;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.btn-primary:hover {
+    -fx-background-color: #233860;
+}
+
+.btn-danger {
+    -fx-background-color: #9b3a3a;
+    -fx-text-fill: white;
+    -fx-font-size: 13px;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.btn-danger:hover {
+    -fx-background-color: #7a2e2e;
+}
+
+.btn-secondary {
+    -fx-background-color: #f0ede3;
+    -fx-text-fill: #16243f;
+    -fx-font-size: 13px;
+    -fx-padding: 8px 16px;
+    -fx-background-radius: 6px;
+    -fx-cursor: hand;
+}
+
+.btn-secondary:hover {
+    -fx-background-color: #e2ddd0;
+}
+
+/* ===== Form ===== */
+
+.form-panel {
+    -fx-background-color: white;
+    -fx-border-color: #e2ddd0;
+    -fx-border-radius: 8px;
+    -fx-background-radius: 8px;
+    -fx-padding: 20px;
+}
+
+.combo-box {
+    -fx-background-color: #fdfcfa;
+    -fx-border-color: #e2ddd0;
+    -fx-border-radius: 6px;
+    -fx-background-radius: 6px;
+    -fx-pref-width: 280px;
+}
+
+/* ===== Badge ===== */
+
+.badge-pass {
+    -fx-background-color: #e6f0ea;
+    -fx-text-fill: #2f6f4e;
+    -fx-background-radius: 20px;
+    -fx-padding: 3px 10px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}
+
+.badge-fail {
+    -fx-background-color: #f3e4e4;
+    -fx-text-fill: #9b3a3a;
+    -fx-background-radius: 20px;
+    -fx-padding: 3px 10px;
+    -fx-font-size: 11px;
+    -fx-font-weight: bold;
+}

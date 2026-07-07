@@ -8,20 +8,19 @@ public class DatabaseSetup {
 
     public static void createTables() {
         Connection conn = DatabaseConnection.getConnection();
-        
+
         try {
             Statement stmt = conn.createStatement();
 
-            // جدول الطلاب
+            // تفعيل Foreign Keys في SQLite
+            stmt.execute("PRAGMA foreign_keys = ON");
+
+            // جدول الصفوف الدراسية
             stmt.execute("""
-                CREATE TABLE IF NOT EXISTS students (
+                CREATE TABLE IF NOT EXISTS classes (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    name TEXT NOT NULL,
-                    email TEXT,
-                    password TEXT,
-                    studentId TEXT UNIQUE,
-                    level TEXT,
-                    className TEXT
+                    className TEXT NOT NULL UNIQUE,
+                    level TEXT NOT NULL
                 )
             """);
 
@@ -39,25 +38,42 @@ public class DatabaseSetup {
                 )
             """);
 
-            // جدول المواد
+            // جدول المواد (مرتبطة بصف + أستاذ)
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS courses (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     courseName TEXT NOT NULL,
-                    teacherName TEXT,
-                    credits INTEGER
+                    classId INTEGER NOT NULL,
+                    teacherId INTEGER,
+                    credits INTEGER,
+                    FOREIGN KEY (classId) REFERENCES classes(id),
+                    FOREIGN KEY (teacherId) REFERENCES teachers(id)
                 )
             """);
 
-            // جدول الدرجات
+            // جدول الطلاب (مرتبطون بصف)
+            stmt.execute("""
+                CREATE TABLE IF NOT EXISTS students (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    email TEXT,
+                    password TEXT,
+                    studentId TEXT UNIQUE,
+                    classId INTEGER,
+                    FOREIGN KEY (classId) REFERENCES classes(id)
+                )
+            """);
+
+            // جدول الدرجات (طالب + مادة)
             stmt.execute("""
                 CREATE TABLE IF NOT EXISTS grades (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    studentId INTEGER,
-                    courseName TEXT,
+                    studentId INTEGER NOT NULL,
+                    courseId INTEGER NOT NULL,
                     score REAL,
                     status TEXT,
-                    FOREIGN KEY (studentId) REFERENCES students(id)
+                    FOREIGN KEY (studentId) REFERENCES students(id),
+                    FOREIGN KEY (courseId) REFERENCES courses(id)
                 )
             """);
 

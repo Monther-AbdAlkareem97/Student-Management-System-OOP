@@ -12,79 +12,60 @@ import java.util.List;
 
 public class GradeController {
 
-    // إضافة درجة لطالب معين (studentId هنا هو id الطالب في جدول students)
-    public static boolean addGrade(int studentId, Grade grade) {
-        String sql = "INSERT INTO grades (studentId, courseName, score, status) VALUES (?, ?, ?, ?)";
-        
+    // إضافة درجة
+    public static boolean addGrade(int studentId, int courseId, double score) {
+        String sql = "INSERT INTO grades (studentId, courseId, score, status) VALUES (?, ?, ?, ?)";
+
         try {
             Connection conn = DatabaseConnection.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            
+
             pstmt.setInt(1, studentId);
-            pstmt.setString(2, grade.getCourseName());
-            pstmt.setDouble(3, grade.getScore());
-            pstmt.setString(4, grade.getStatus());
-            
+            pstmt.setInt(2, courseId);
+            pstmt.setDouble(3, score);
+            pstmt.setString(4, score >= 50 ? "ناجح" : "راسب");
+
             pstmt.executeUpdate();
             System.out.println("✅ تم إضافة الدرجة بنجاح");
             return true;
-            
+
         } catch (SQLException e) {
             System.out.println("❌ خطأ في الإضافة: " + e.getMessage());
             return false;
         }
     }
 
-    // عرض كل درجات طالب معين
+    // عرض كل درجات طالب معين (مع اسم المادة)
     public static List<Grade> getGradesByStudentId(int studentId) {
         List<Grade> grades = new ArrayList<>();
-        String sql = "SELECT * FROM grades WHERE studentId=?";
-        
+        String sql = """
+            SELECT g.id, g.studentId, g.courseId, c.courseName, g.score, g.status
+            FROM grades g
+            LEFT JOIN courses c ON g.courseId = c.id
+            WHERE g.studentId = ?
+        """;
+
         try {
             Connection conn = DatabaseConnection.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, studentId);
             ResultSet rs = pstmt.executeQuery();
-            
-            while (rs.next()) {
-                Grade g = new Grade(
-                    rs.getInt("id"),
-                    rs.getString("courseName"),
-                    rs.getDouble("score")
-                );
-                grades.add(g);
-            }
-            
-        } catch (SQLException e) {
-            System.out.println("❌ خطأ في العرض: " + e.getMessage());
-        }
-        
-        return grades;
-    }
 
-    // عرض كل الدرجات (لكل الطلاب)
-    public static List<Grade> getAllGrades() {
-        List<Grade> grades = new ArrayList<>();
-        String sql = "SELECT * FROM grades";
-        
-        try {
-            Connection conn = DatabaseConnection.getConnection();
-            PreparedStatement pstmt = conn.prepareStatement(sql);
-            ResultSet rs = pstmt.executeQuery();
-            
             while (rs.next()) {
                 Grade g = new Grade(
                     rs.getInt("id"),
+                    rs.getInt("studentId"),
+                    rs.getInt("courseId"),
                     rs.getString("courseName"),
                     rs.getDouble("score")
                 );
                 grades.add(g);
             }
-            
+
         } catch (SQLException e) {
             System.out.println("❌ خطأ في العرض: " + e.getMessage());
         }
-        
+
         return grades;
     }
 
@@ -92,7 +73,7 @@ public class GradeController {
     public static double calculateGPA(int studentId) {
         List<Grade> grades = getGradesByStudentId(studentId);
         if (grades.isEmpty()) return 0.0;
-        
+
         double total = 0;
         for (Grade g : grades) {
             total += g.getScore();
@@ -101,22 +82,21 @@ public class GradeController {
     }
 
     // تعديل درجة
-    public static boolean updateGrade(Grade grade) {
-        String sql = "UPDATE grades SET courseName=?, score=?, status=? WHERE id=?";
-        
+    public static boolean updateGrade(int gradeId, double score) {
+        String sql = "UPDATE grades SET score=?, status=? WHERE id=?";
+
         try {
             Connection conn = DatabaseConnection.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql);
-            
-            pstmt.setString(1, grade.getCourseName());
-            pstmt.setDouble(2, grade.getScore());
-            pstmt.setString(3, grade.getStatus());
-            pstmt.setInt(4, grade.getGradeId());
-            
+
+            pstmt.setDouble(1, score);
+            pstmt.setString(2, score >= 50 ? "ناجح" : "راسب");
+            pstmt.setInt(3, gradeId);
+
             pstmt.executeUpdate();
             System.out.println("✅ تم تعديل الدرجة بنجاح");
             return true;
-            
+
         } catch (SQLException e) {
             System.out.println("❌ خطأ في التعديل: " + e.getMessage());
             return false;
@@ -126,16 +106,16 @@ public class GradeController {
     // حذف درجة
     public static boolean deleteGrade(int gradeId) {
         String sql = "DELETE FROM grades WHERE id=?";
-        
+
         try {
             Connection conn = DatabaseConnection.getConnection();
             PreparedStatement pstmt = conn.prepareStatement(sql);
             pstmt.setInt(1, gradeId);
-            
+
             pstmt.executeUpdate();
             System.out.println("✅ تم حذف الدرجة بنجاح");
             return true;
-            
+
         } catch (SQLException e) {
             System.out.println("❌ خطأ في الحذف: " + e.getMessage());
             return false;

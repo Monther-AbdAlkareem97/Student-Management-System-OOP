@@ -1,61 +1,124 @@
 package view;
 
+import controller.CourseController;
+import controller.StudentController;
+import controller.TeacherController;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
 
 public class DashboardView {
 
     public static void show(Stage stage) {
-        Label titleLabel = new Label("لوحة التحكم - نظام إدارة الطلاب");
-        titleLabel.setStyle("-fx-font-size: 18px; -fx-font-weight: bold;");
 
-        Button studentsBtn = new Button("👥 إدارة الطلاب");
-        Button teachersBtn = new Button("👨‍🏫 إدارة الأساتذة");
-        Button coursesBtn = new Button("📚 إدارة المواد");
-        Button gradesBtn = new Button("📝 إدارة الدرجات");
-        Button reportsBtn = new Button("📊 التقارير");
+        // ===== Sidebar =====
+        VBox sidebar = createSidebar(stage, "dashboard");
 
-        String btnStyle = "-fx-font-size: 14px; -fx-min-width: 200px; -fx-pref-height: 40px;";
-        studentsBtn.setStyle(btnStyle);
-        teachersBtn.setStyle(btnStyle);
-        coursesBtn.setStyle(btnStyle);
-        gradesBtn.setStyle(btnStyle);
-        reportsBtn.setStyle(btnStyle);
+        // ===== Main Content =====
+        VBox mainContent = new VBox(20);
+        mainContent.getStyleClass().add("main-content");
+        VBox.setVgrow(mainContent, Priority.ALWAYS);
+        HBox.setHgrow(mainContent, Priority.ALWAYS);
 
-        // مؤقتاً، رح نربط كل زر بشاشته لما نسويها
-        studentsBtn.setOnAction(e -> {
-            StudentView.show(stage);
-        });
-        
-        teachersBtn.setOnAction(e -> {
-            TeacherView.show(stage);
-        });
-        
-        coursesBtn.setOnAction(e -> {
-            CourseView.show(stage);
-        });
-        
-        gradesBtn.setOnAction(e -> {
-            GradeView.show(stage);
-        });
-        
-        reportsBtn.setOnAction(e -> {
-            ReportsView.show(stage);
-        });
+        // Header
+        Label eyebrow = new Label("لوحة التحكم");
+        Label title   = new Label("نظرة عامة على النظام");
+        eyebrow.getStyleClass().add("page-eyebrow");
+        title.getStyleClass().add("page-title");
+        VBox header = new VBox(4, eyebrow, title);
 
-        VBox layout = new VBox(15);
-        layout.setPadding(new Insets(40));
-        layout.setAlignment(Pos.CENTER);
-        layout.getChildren().addAll(titleLabel, studentsBtn, teachersBtn, coursesBtn, gradesBtn, reportsBtn);
+        // Stat Cards
+        int studentCount = StudentController.getAllStudents().size();
+        int teacherCount = TeacherController.getAllTeachers().size();
+        int courseCount  = CourseController.getAllCourses().size();
 
-        Scene scene = new Scene(layout, 450, 400);
-        stage.setTitle("لوحة التحكم");
+        HBox statsRow = new HBox(14,
+            createStatCard(String.valueOf(studentCount), "إجمالي الطلاب"),
+            createStatCard(String.valueOf(teacherCount), "إجمالي الأساتذة"),
+            createStatCard(String.valueOf(courseCount),  "المواد الدراسية")
+        );
+
+        mainContent.getChildren().addAll(header, statsRow);
+
+        // ===== Root =====
+        HBox root = new HBox(mainContent, sidebar);
+        HBox.setHgrow(mainContent, Priority.ALWAYS);
+
+        Scene scene = new Scene(root);
+        scene.getStylesheets().add(
+            DashboardView.class.getResource("/styles.css").toExternalForm()
+        );
+
+        stage.setTitle("لوحة التحكم - نظام إدارة الطلاب");
         stage.setScene(scene);
+        stage.setMaximized(true);
+        stage.setWidth(1200);
+        stage.setHeight(700);
         stage.show();
+    }
+
+    // ===== Sidebar مشترك بين كل الشاشات =====
+    public static VBox createSidebar(Stage stage, String activePage) {
+        VBox sidebar = new VBox();
+        sidebar.getStyleClass().add("sidebar");
+
+        // Brand
+        Label brandTitle = new Label("نظام إدارة الطلاب");
+        brandTitle.getStyleClass().add("sidebar-brand-title");
+        VBox brand = new VBox(brandTitle);
+        brand.getStyleClass().add("sidebar-brand");
+        brand.setPadding(new Insets(20));
+
+        // Nav Buttons
+        Button dashBtn     = createNavBtn("🏠  الرئيسية",      "dashboard", activePage, e -> DashboardView.show(stage));
+        Button classesBtn  = createNavBtn("🏫  إدارة الصفوف",  "classes",   activePage, e -> ClassView.show(stage));
+        Button studentsBtn = createNavBtn("👥  إدارة الطلاب",  "students",  activePage, e -> StudentView.show(stage));
+        Button teachersBtn = createNavBtn("👨‍🏫  إدارة الأساتذة","teachers",  activePage, e -> TeacherView.show(stage));
+        Button coursesBtn  = createNavBtn("📚  إدارة المواد",  "courses",   activePage, e -> CourseView.show(stage));
+        Button gradesBtn   = createNavBtn("📝  إدارة الدرجات", "grades",    activePage, e -> GradeView.show(stage));
+        Button reportsBtn  = createNavBtn("📊  التقارير",      "reports",   activePage, e -> ReportsView.show(stage));
+
+        // Logout
+        Region spacer = new Region();
+        VBox.setVgrow(spacer, Priority.ALWAYS);
+
+        Button logoutBtn = new Button("🚪  تسجيل الخروج");
+        logoutBtn.getStyleClass().add("logout-btn");
+        logoutBtn.setOnAction(e -> LoginView.show(stage));
+
+        sidebar.getChildren().addAll(
+            brand,
+            dashBtn, classesBtn, studentsBtn,
+            teachersBtn, coursesBtn, gradesBtn, reportsBtn,
+            spacer, logoutBtn
+        );
+
+        return sidebar;
+    }
+
+    // ===== مساعد: إنشاء زر Nav =====
+    private static Button createNavBtn(String text, String page, String activePage,
+                                       javafx.event.EventHandler<javafx.event.ActionEvent> action) {
+        Button btn = new Button(text);
+        btn.getStyleClass().add(page.equals(activePage) ? "nav-btn-active" : "nav-btn");
+        btn.setOnAction(action);
+        btn.setMaxWidth(Double.MAX_VALUE);
+        return btn;
+    }
+
+    // ===== مساعد: إنشاء Stat Card =====
+    private static VBox createStatCard(String number, String label) {
+        Label numLabel = new Label(number);
+        Label lblLabel = new Label(label);
+        numLabel.getStyleClass().add("stat-number");
+        lblLabel.getStyleClass().add("stat-label");
+
+        VBox card = new VBox(6, numLabel, lblLabel);
+        card.getStyleClass().add("stat-card");
+        card.setPrefWidth(160);
+        return card;
     }
 }

@@ -1,103 +1,532 @@
 package view;
 
+import controller.ClassController;
 import controller.CourseController;
 import controller.GradeController;
 import controller.StudentController;
 import controller.TeacherController;
+
+import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ScrollPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.VBox;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.*;
 import javafx.stage.Stage;
+
+import model.Course;
 import model.Grade;
+import model.SchoolClass;
 import model.Student;
 
 import java.util.List;
 
 public class ReportsView {
 
+
+    private static ComboBox<String> levelCombo = new ComboBox<>();
+    private static ComboBox<SchoolClass> classCombo = new ComboBox<>();
+
+    private static TableView<Student> studentsTable = new TableView<>();
+
+    private static TableView<Grade> gradesTable = new TableView<>();
+
+    private static Label gpaLabel =
+            new Label("المعدل التراكمي: -");
+
+
+
     public static void show(Stage stage) {
 
-        VBox content = new VBox(15);
-        content.setPadding(new Insets(20));
 
-        Label title = new Label("📊 التقارير والإحصائيات");
-        title.setStyle("-fx-font-size: 20px; -fx-font-weight: bold;");
+        setupStudentsTable();
+        setupGradesTable();
 
-        // إحصائيات عامة
-        List<Student> students = StudentController.getAllStudents();
-        int teacherCount = TeacherController.getAllTeachers().size();
-        int courseCount = CourseController.getAllCourses().size();
 
-        Label generalStats = new Label(
-                "عدد الطلاب: " + students.size() +
-                " | عدد الأساتذة: " + teacherCount +
-                " | عدد المواد: " + courseCount
+        loadLevels();
+
+
+
+        // عند اختيار المرحلة
+        levelCombo.setOnAction(e -> {
+
+            loadClassesByLevel();
+
+            studentsTable.getItems().clear();
+            gradesTable.getItems().clear();
+
+            gpaLabel.setText(
+                    "المعدل التراكمي: -"
+            );
+
+        });
+
+
+
+        // عند اختيار السنة
+        classCombo.setOnAction(e -> {
+
+            loadStudentsByClass();
+
+            gradesTable.getItems().clear();
+
+            gpaLabel.setText(
+                    "المعدل التراكمي: -"
+            );
+
+        });
+
+
+
+        studentsTable.setOnMouseClicked(e -> {
+
+            loadGradesForStudent();
+
+        });
+
+
+
+        // ===== Filters =====
+
+
+        GridPane filterPanel =
+                new GridPane();
+
+
+        filterPanel.setHgap(15);
+        filterPanel.setVgap(10);
+        filterPanel.setPadding(
+                new Insets(20)
         );
-        generalStats.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
 
-        // الناجحين والراسبين
-        VBox passFailBox = new VBox(5);
-        Label passFailTitle = new Label("✅ الناجحون / ❌ الراسبون:");
-        passFailTitle.setStyle("-fx-font-weight: bold;");
-        passFailBox.getChildren().add(passFailTitle);
 
-        double highestScore = -1;
-        double lowestScore = 101;
-        String highestInfo = "";
-        String lowestInfo = "";
+        filterPanel.getStyleClass()
+                .add("form-panel");
 
-        for (Student s : students) {
-            List<Grade> grades = GradeController.getGradesByStudentId(s.getId());
-            double gpa = GradeController.calculateGPA(s.getId());
 
-            String status = gpa >= 50 ? "✅ ناجح" : "❌ راسب";
-            if (!grades.isEmpty()) {
-                passFailBox.getChildren().add(new Label(
-                        s.getName() + " (" + s.getStudentId() + ") - المعدل: " +
-                        String.format("%.2f", gpa) + " - " + status
-                ));
-            }
 
-            for (Grade g : grades) {
-                if (g.getScore() > highestScore) {
-                    highestScore = g.getScore();
-                    highestInfo = s.getName() + " - " + g.getCourseName() + " (" + g.getScore() + ")";
-                }
-                if (g.getScore() < lowestScore) {
-                    lowestScore = g.getScore();
-                    lowestInfo = s.getName() + " - " + g.getCourseName() + " (" + g.getScore() + ")";
-                }
-            }
-        }
+        levelCombo.getStyleClass()
+                .add("combo-box");
 
-        // أعلى وأقل درجة
-        VBox highLowBox = new VBox(5);
-        Label highLowTitle = new Label("🏆 أعلى وأقل درجة:");
-        highLowTitle.setStyle("-fx-font-weight: bold;");
-        highLowBox.getChildren().add(highLowTitle);
 
-        if (highestScore != -1) {
-            highLowBox.getChildren().add(new Label("أعلى درجة: " + highestInfo));
-            highLowBox.getChildren().add(new Label("أقل درجة: " + lowestInfo));
-        } else {
-            highLowBox.getChildren().add(new Label("لا توجد درجات مسجلة بعد"));
-        }
+        classCombo.getStyleClass()
+                .add("combo-box");
 
-        Button backBtn = new Button("⬅️ رجوع");
-        backBtn.setOnAction(e -> DashboardView.show(stage));
 
-        content.getChildren().addAll(title, generalStats, passFailBox, highLowBox, backBtn);
 
-        ScrollPane scrollPane = new ScrollPane(content);
-        scrollPane.setFitToWidth(true);
+        filterPanel.addRow(
+                0,
+                new Label("المرحلة:"),
+                levelCombo
+        );
 
-        Scene scene = new Scene(scrollPane, 550, 600);
-        stage.setTitle("التقارير");
+
+        filterPanel.addRow(
+                1,
+                new Label("السنة:"),
+                classCombo
+        );
+
+
+
+
+        // ===== Students Panel =====
+
+
+        VBox studentsPanel =
+                new VBox(
+                        studentsTable
+                );
+
+
+        studentsPanel.getStyleClass()
+                .add("panel");
+
+
+
+
+        // ===== Grades Panel =====
+
+
+        VBox gradesPanel =
+                new VBox(
+                        gradesTable,
+                        gpaLabel
+                );
+
+
+        gradesPanel.setSpacing(10);
+
+
+        gradesPanel.setPadding(
+                new Insets(10)
+        );
+
+
+        gradesPanel.getStyleClass()
+                .add("panel");
+
+
+
+        gpaLabel.getStyleClass()
+                .add("panel-title");
+
+
+
+
+        // ===== Header =====
+
+
+        Label eyebrow =
+                new Label("إدارة");
+
+
+        Label title =
+                new Label("التقارير الدراسية");
+
+
+        eyebrow.getStyleClass()
+                .add("page-eyebrow");
+
+
+        title.getStyleClass()
+                .add("page-title");
+
+
+
+        VBox header =
+                new VBox(
+                        4,
+                        eyebrow,
+                        title
+                );
+
+
+
+
+
+        // ===== Main Content =====
+
+
+        VBox mainContent =
+                new VBox(
+                        20,
+                        header,
+                        filterPanel,
+                        studentsPanel,
+                        gradesPanel
+                );
+
+
+        mainContent.getStyleClass()
+                .add("main-content");
+
+
+
+        HBox.setHgrow(
+                mainContent,
+                Priority.ALWAYS
+        );
+
+
+
+        VBox sidebar =
+                DashboardView.createSidebar(
+                        stage,
+                        "reports"
+                );
+
+
+
+        HBox root =
+                new HBox(
+                        mainContent,
+                        sidebar
+                );
+
+
+
+        Scene scene =
+                new Scene(root);
+
+
+
+        scene.getStylesheets()
+                .add(
+                    ReportsView.class
+                    .getResource("/styles.css")
+                    .toExternalForm()
+                );
+
+
+
+        stage.setTitle(
+                "التقارير"
+        );
+
+
         stage.setScene(scene);
+
+        stage.setMaximized(true);
+
         stage.show();
+
     }
+
+
+
+
+    // تحميل المراحل
+
+    private static void loadLevels() {
+
+
+        levelCombo.setItems(
+                FXCollections.observableArrayList(
+                        "ابتدائي",
+                        "إعدادي",
+                        "ثانوي"
+                )
+        );
+
+    }
+
+
+
+
+
+    // تحميل السنوات حسب المرحلة
+
+    private static void loadClassesByLevel() {
+
+
+        String level =
+                levelCombo.getValue();
+
+
+
+        if(level == null)
+            return;
+
+
+
+        List<SchoolClass> classes =
+                ClassController.getAllClasses();
+
+
+
+        classes.removeIf(
+                c -> !c.getLevel().equals(level)
+        );
+
+
+
+        classCombo.setItems(
+                FXCollections.observableArrayList(
+                        classes
+                )
+        );
+
+
+    }
+
+
+
+
+
+    // تحميل الطلاب
+
+    private static void loadStudentsByClass() {
+
+
+        SchoolClass selected =
+                classCombo.getValue();
+
+
+
+        if(selected == null)
+            return;
+
+
+
+        studentsTable.setItems(
+                FXCollections.observableArrayList(
+                        StudentController
+                        .getStudentsByClassId(
+                                selected.getId()
+                        )
+                )
+        );
+
+
+    }
+
+
+
+
+
+
+    // تحميل درجات الطالب
+
+    private static void loadGradesForStudent() {
+
+
+        Student student =
+                studentsTable
+                .getSelectionModel()
+                .getSelectedItem();
+
+
+
+        if(student == null)
+            return;
+
+
+
+        List<Grade> grades =
+                GradeController
+                .getGradesByStudentId(
+                        student.getId()
+                );
+
+
+
+        gradesTable.setItems(
+                FXCollections.observableArrayList(
+                        grades
+                )
+        );
+
+
+
+        double gpa =
+                GradeController
+                .calculateGPA(
+                        student.getId()
+                );
+
+
+
+        gpaLabel.setText(
+                "الطالب: "
+                + student.getName()
+                + " | GPA: "
+                + String.format(
+                        "%.2f",
+                        gpa
+                )
+        );
+
+
+    }
+
+
+
+
+
+
+
+    private static void setupStudentsTable() {
+
+
+        TableColumn<Student,String> id =
+                new TableColumn<>("رقم الطالب");
+
+
+        id.setCellValueFactory(
+                new PropertyValueFactory<>("studentId")
+        );
+
+
+
+        TableColumn<Student,String> name =
+                new TableColumn<>("اسم الطالب");
+
+
+        name.setCellValueFactory(
+                new PropertyValueFactory<>("name")
+        );
+
+
+
+        TableColumn<Student,String> className =
+                new TableColumn<>("السنة");
+
+
+        className.setCellValueFactory(
+                new PropertyValueFactory<>("className")
+        );
+
+
+
+        studentsTable.getColumns()
+                .addAll(
+                        id,
+                        name,
+                        className
+                );
+
+
+
+        studentsTable.setColumnResizePolicy(
+                TableView.CONSTRAINED_RESIZE_POLICY
+        );
+
+    }
+
+
+
+
+
+
+
+    private static void setupGradesTable() {
+
+
+        TableColumn<Grade,String> course =
+                new TableColumn<>("المادة");
+
+
+        course.setCellValueFactory(
+                new PropertyValueFactory<>("courseName")
+        );
+
+
+
+        TableColumn<Grade,Double> score =
+                new TableColumn<>("الدرجة");
+
+
+        score.setCellValueFactory(
+                new PropertyValueFactory<>("score")
+        );
+
+
+
+        TableColumn<Grade,String> status =
+                new TableColumn<>("الحالة");
+
+
+        status.setCellValueFactory(
+                new PropertyValueFactory<>("status")
+        );
+
+
+
+        gradesTable.getColumns()
+                .addAll(
+                        course,
+                        score,
+                        status
+                );
+
+
+
+        gradesTable.setColumnResizePolicy(
+                TableView.CONSTRAINED_RESIZE_POLICY
+        );
+
+
+    }
+
 }
